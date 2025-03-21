@@ -72,7 +72,19 @@ class TextToSQLProcessor:
         """
         prompt = self.sql_prompt_template.format(context=context, question=question)
         response = self.llm.invoke(prompt)
-        return response.content.strip()
+        sql_query = response.content.strip()
+        
+        # Remove triple quotes if present
+        if sql_query.startswith("'''") and sql_query.endswith("'''"):
+            sql_query = sql_query[3:-3].strip()
+        elif sql_query.startswith('```') and sql_query.endswith('```'):
+            sql_query = sql_query[3:-3].strip()
+            
+            # Remove SQL language tag if present
+            if sql_query.startswith('sql'):
+                sql_query = sql_query[3:].strip()
+                
+        return sql_query
     
     def correct_sql(self, query: str, error: str) -> str:
         """
@@ -87,7 +99,19 @@ class TextToSQLProcessor:
         """
         prompt = self.correction_prompt_template.format(query=query, error=error)
         response = self.llm.invoke(prompt)
-        return response.content.strip()
+        corrected_query = response.content.strip()
+        
+        # Remove triple quotes if present
+        if corrected_query.startswith("'''") and corrected_query.endswith("'''"):
+            corrected_query = corrected_query[3:-3].strip()
+        elif corrected_query.startswith('```') and corrected_query.endswith('```'):
+            corrected_query = corrected_query[3:-3].strip()
+            
+            # Remove SQL language tag if present
+            if corrected_query.startswith('sql'):
+                corrected_query = corrected_query[3:].strip()
+                
+        return corrected_query
     
     def execute_with_correction(self, 
                                sql_query: str, 
